@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Five Help</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #ff0000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header img {
+            width: 80px;
+            height: auto;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .customer-care-container, .chatbot-container {
+            background-color: #8B0000;
+            border-radius: 15px;
+            padding: 20px;
+            width: 45%;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-log {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            color: #000;
+            margin-bottom: 10px;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+        }
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .input-container button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #674188;
+            color: #fff;
+            cursor: pointer;
+        }
+        .input-container button:hover {
+            background-color: #50357d;
+        }
+        .button {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .back-button {
+            background-color: #508C9B;
+        }
+        .issue-button {
+            background-color: #FF6F61;
+        }
+        .resolve-button {
+            background-color: #4CAF50;
+        }
+        .resolve-button-no {
+            background-color: #FF5722;
+        }
+        .resolve-options {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="dependencies/logo.png" alt="Wi-Five Logo">
+    <nav>
+        <a href="myaccount.html">My Account</a>
+        <a href="plandetails.html">Plan Details</a>
+        <a href="products.html">Products</a>
+        <a href="help.html">Help</a>
+    </nav>
+</header>
+
+<div class="content-container">
+    <div class="customer-care-container">
+        <img src="dependencies/phone-icon.png" alt="Phone Icon">
+        <h3>Customer Care</h3>
+        <p>Phone: +91-XXXXXXXXXX</p>
+        <p>Email: care@wifive.com</p>
+    </div>
+
+    <div class="chatbot-container">
+        <h3>Chat with Us</h3>
+        <div class="chat-container">
+            <div class="chat-log" id="chatLog">
+                <div id="welcomeMessage">Welcome to the chatbot! Click on an issue below to get started.</div>
+            </div>
+            <div class="input-container">
+                <input type="text" id="userInput" placeholder="Type your message here...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div id="issueButtons" style="margin-top: 20px;">
+                <!-- Issue buttons will be populated here -->
+            </div>
+            <div id="backButtonContainer" style="display: none; margin-top: 20px;">
+                <div class="button back-button" onclick="goBack()">Back</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const intents = {
+        "network_issue": {
+            "patterns": ["My internet is slow", "Wi-Fi not working", "No internet connection", "Connection keeps dropping"],
+            "responses": ["Please try restarting your router. If that doesn't work, check your cables.", "A quick reset of your modem might help."]
+        },
+        "vpn_issue": {
+            "patterns": ["VPN isn't connecting", "VPN keeps disconnecting", "My VPN is slow"],
+            "responses": ["Try disconnecting and reconnecting your VPN, or switch to a different server.", "Ensure your internet connection is stable."]
+        },
+        "dth_issue": {
+            "patterns": ["DTH isn't working", "No signal on my DTH", "Can't access channels"],
+            "responses": ["Try rebooting your DTH box and check the dish alignment."]
+        },
+        "product_info": {
+            "patterns": ["Tell me about your plans", "What services do you offer?", "What are your internet plans?", "What are your OTT plans?"],
+            "responses": ["We offer a range of services including Wi-Fi, SIM cards, DTH, VPN, and OTT streaming. For more details, visit our website."]
+        },
+        "wifi_issue": {
+            "patterns": ["Wi-Fi is not connecting", "Wi-Fi is too slow", "Wi-Fi keeps disconnecting"],
+            "responses": ["Try restarting your router or moving closer to it.", "Ensure there are no obstructions between you and the router."]
+        },
+        "sim_issue": {
+            "patterns": ["SIM is not working", "SIM card is not recognized", "Can't make calls or send messages"],
+            "responses": ["Please check if the SIM card is inserted correctly. Try restarting your phone."]
+        }
+    };
+
+    function displayIssueButtons() {
+        const issueButtons = document.getElementById('issueButtons');
+        issueButtons.innerHTML = '';
+
+        for (const [key, value] of Object.entries(intents)) {
+            const button = document.createElement('div');
+            button.className = 'button issue-button';
+            button.textContent = key.replace(/_/g, ' ').toUpperCase();
+            button.onclick = () => showPatterns(key);
+            issueButtons.appendChild(button);
+        }
+    }
+
+    function showPatterns(tag) {
+        const chatLog = document.getElementById('chatLog');
+        chatLog.innerHTML = `<strong>Selected Issue: ${tag.replace(/_/g, ' ').toUpperCase()}</strong><br><br>`;
+
+        const patterns = intents[tag].patterns;
+        patterns.forEach(pattern => {
+            const button = document.createElement('div');
+            button.className = 'button issue-button';
+            button.textContent = pattern;
+            button.onclick = () => sendMessage(pattern);
+            chatLog.appendChild(button);
+        });
+
+        document.getElementById('backButtonContainer').style.display = 'block';
+    }
+
+    function goBack() {
+        document.getElementById('chatLog').innerHTML = '';
+        displayIssueButtons();
+        document.getElementById('backButtonContainer').style.display = 'none';
+    }
+
+    function sendMessage(message) {
+        const chatLog = document.getElementById('chatLog');
+        chatLog.innerHTML += `You: ${message}<br>`;
+
+        let response = getResponse(message);
+        chatLog.innerHTML += `Bot: ${response}<br>`;
+
+        chatLog.innerHTML += `
+            <div>Is your issue resolved?</div>
+            <div class="resolve-options">
+                <div class="button resolve-button" onclick="issueResolved(true)">Yes</div>
+                <div class="button resolve-button resolve-button-no" onclick="issueResolved(false)">No</div>
+            </div>
+        `;
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function getResponse(message) {
+        for (const [tag, data] of Object.entries(intents)) {
+            if (data.patterns.some(pattern => message.toLowerCase().includes(pattern.toLowerCase()))) {
+                return data.responses[Math.floor(Math.random() * data.responses.length)];
+            }
+        }
+        return "Sorry, I didn't understand that. Please try again or contact support at wifive12345@gmail.com.";
+    }
+
+    function issueResolved(resolved) {
+        const chatLog = document.getElementById('chatLog');
+        if (resolved) {
+            chatLog.innerHTML += "Thank you for confirming. If you need further assistance, please reach out to support at wifive12345@gmail.com.<br>";
+        } else {
+            chatLog.innerHTML += "Sorry that you're still having issues. Please contact support at wifive12345@gmail.com for further assistance.<br>";
+        }
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    displayIssueButtons();
+</script>
+
+</body>
+</html>
